@@ -421,8 +421,9 @@ p{
     border-radius: 7px;
     border: 2px solid #5E6697;
     margin-left: -70px;
-    height: 105px;
+    height: 115px;
     font-size: 11pt;
+    background-color: white;
 }
 
 #nomePost {
@@ -441,7 +442,7 @@ p{
 .btn-like {
     border: none;
     background-color: rgba(255, 255, 255, 0);
-    padding: 5px;
+    padding: 2px;
     cursor: pointer;
 }
 
@@ -455,7 +456,7 @@ p{
     border: none;
     background-color: rgba(255, 255, 255, 0);
     margin-top: -25px;
-    padding: 5px;
+    padding: 8px;
     cursor: pointer;
 }
 
@@ -497,7 +498,7 @@ i{
 }
 
 i{
-    font-size: 15px;
+    font-size: 20px;
     color: #3A7B50;
 }
 

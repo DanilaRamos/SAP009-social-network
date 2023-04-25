@@ -17745,8 +17745,8 @@ function deslogar() {
   const auth2 = getAuth();
   signOut(auth2);
 }
-function converterDataPost() {
-  const dataConvertida = new Date().toLocaleDateString();
+function converterDataPost(data) {
+  const dataConvertida = data.toDate().toLocaleDateString("pt-BR");
   return dataConvertida;
 }
 async function pegarPosts() {
@@ -17755,37 +17755,35 @@ async function pegarPosts() {
   const posts = [];
   querySnapshot.forEach((doc) => {
     const dados = doc.data();
-    dados.data = converterDataPost();
+    dados.data = converterDataPost(dados.data);
     posts.push({ id: doc.id, ...dados });
   });
   return posts;
 }
 async function criandoPost(txt) {
-  try {
-    const postRef = sh(db, "posts");
-    const dataAtual = new Date();
-    const postagem2 = await uf(postRef, {
-      nome: auth.currentUser.displayName,
-      autor: auth.currentUser.uid,
-      texto: txt,
-      data: dataAtual,
-      like: []
-    });
-    alert("Document written with ID: ", postagem2.id);
-  } catch (e) {
-    alert.error("Error adding document: ", e);
-  }
+  const postRef = sh(db, "posts");
+  const auth2 = getAuth(firebaseApp);
+  const dataAtual = new Date();
+  await uf(postRef, {
+    nome: auth2.currentUser.displayName,
+    autor: auth2.currentUser.uid,
+    texto: txt,
+    data: dataAtual,
+    like: []
+  });
 }
 async function likePost(postId) {
+  const auth2 = getAuth(firebaseApp);
   const docRef = rh(db, "posts", postId);
   await rf(docRef, {
-    like: Sf(auth.currentUser.uid)
+    like: Sf(auth2.currentUser.uid)
   });
 }
 async function deslikePost(postId) {
+  const auth2 = getAuth(firebaseApp);
   const docRef = rh(db, "posts", postId);
   await rf(docRef, {
-    like: Df(auth.currentUser.uid)
+    like: Df(auth2.currentUser.uid)
   });
 }
 async function editarPost(postId, textEdit) {
@@ -17797,14 +17795,17 @@ async function editarPost(postId, textEdit) {
 async function deletarPost(postId) {
   await of(rh(db, "posts", postId));
 }
+const logoImagem = "" + new URL("logoImagem.ddb5d265.jpeg", import.meta.url).href;
+const logoHome = "" + new URL("Logo.png.f0393178.png", import.meta.url).href;
+const google = "data:image/x-icon;base64,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";
 const login = () => {
   const container = document.createElement("div");
   const template = `  
     <p class='logo'>
-    <img id='logoImagem' src= 'imagens/logoImagem.jpeg' alt="imagem de um gatinho de \xF3culos e um cachorrinho">
+    <img id='logoImagem' src= '${logoImagem}' alt="imagem de um gatinho de \xF3culos e um cachorrinho">
     </p>
     <section class='flex-container'>
-    <img id='logo-insta' src='imagens/Logo.png.png' alt='imagem de um gatinho de \xF3culos e um cachorrinho'>
+    <img id='logo-insta' src='${logoHome}' alt='imagem de um gatinho de \xF3culos e um cachorrinho'>
     <div class= "vertical"></div> 
     <form class='form'>
     
@@ -17827,7 +17828,7 @@ const login = () => {
     <section class='buttons'>
       <div id="linhaHor1"></div>
     
-      <button onClick={actionLoginGoogle} id='googleButton'><img class="google-icon" src="imagens/google.ico" alt="google-icon">Google</button>
+      <button onClick={actionLoginGoogle} id='googleButton'><img class="google-icon" src="${google}" alt="google-icon">Google</button>
      
       <div id="linhaHor2"></div>
     </section>
@@ -17873,9 +17874,13 @@ const postagem = (posts) => {
         <p id="dataPostado">${post.data}</p>
           <div class="post-action">
           <div class="post-like">
-              ${post.like.includes(auth.currentUser.uid) ? `  <button class="btn-deslike" >
-              <i class="fa-solid fa-heart" data-id="${post.id}" data-like="${post.like}"></i></button>` : ` <button class="btn-like">
-              <i class="fa-regular fa-heart"  data-id="${post.id}" data-like="${post.like}"></i></button>`}
+
+          ${post.like.includes(auth.currentUser.uid) ? `  <button class="btn-deslike" >
+          <i class="fa-solid fa-heart" data-id="${post.id}" data-like="${post.like}"></i>
+      </button>` : `  <button class="btn-like">
+      <i class="fa-regular fa-heart"  data-id="${post.id}" data-like="${post.like}"></i>
+       </button>`}
+          
                   <span class="contar-like">${post.like.length}</span>
 
                       </div>
@@ -17901,7 +17906,7 @@ const postagem = (posts) => {
       likePost(postId).then(() => {
         document.location.reload(true);
       }).catch(() => {
-        console.log("deu ruim");
+        alert("Algo deu errado na sua solicita\xE7\xE3o. Tente novamente em instantes.");
       });
     });
   });
@@ -17911,17 +17916,7 @@ const postagem = (posts) => {
       deslikePost(postId).then(() => {
         document.location.reload(true);
       }).catch(() => {
-        console.log("deu ruim");
-      });
-    });
-  });
-  btnDeslike.forEach((element) => {
-    element.addEventListener("click", (e) => {
-      const postId = e.target.dataset.id;
-      deslikePost(postId).then(() => {
-        document.location.reload(true);
-      }).catch(() => {
-        console.log("deu ruim");
+        alert("Algo deu errado na sua solicita\xE7\xE3o. Tente novamente em instantes.");
       });
     });
   });
@@ -17932,7 +17927,7 @@ const postagem = (posts) => {
       editarPost(postId, textEdit).then(() => {
         document.location.reload(true);
       }).catch(() => {
-        console.log("N\xE3o foi poss\xEDvel editar o seu post, tente novamente.");
+        alert("N\xE3o foi poss\xEDvel editar o seu post, tente novamente.");
       });
     });
   });
@@ -17949,6 +17944,7 @@ const postagem = (posts) => {
     });
   });
 };
+const logoTexto = "" + new URL("logo1.png.96e86f7b.png", import.meta.url).href;
 const home = () => {
   const container = document.createElement("div");
   let displayName = "";
@@ -17965,11 +17961,11 @@ const home = () => {
   </header>
 
     <section class="bordaCadastroHome">
-      <img id="logoTexto" src="imagens/logo1.png.png">
-      <img id="logoPgHome" src='imagens/Logo.png.png'>
+      <img id="logoTexto" src="${logoTexto}">
+      <img id="logoPgHome" src='${logoHome}'>
       <p id="nomeUsuario">@${displayName}</p>
     
-      <textarea class="feed-text-box" id="areaTexto" placeholder="Escreva aqui um novo post..." name="story" rows="5" cols="33"></textarea>
+      <textarea class="feed-text-box" id="areaTexto" placeholder="Escreva aqui um novo post..." name="story" rows="3" cols="33"></textarea>
       <button id='posts'>Postar</button>
     
       <div id='post-area'></div>
@@ -18003,9 +17999,9 @@ const home = () => {
 const cadastro = () => {
   const container = document.createElement("div");
   const template = ` 
-  <img id="logoImagemMobile" src="imagens/logoImagem.jpeg">
+  <img id="logoImagemMobile" src="${logoImagem}">
   <section id="bordaCadastro">
-  <img id="logoImagemDesktop" src="imagens/logoImagem.jpeg">
+  <img id="logoImagemDesktop" src="${logoImagem}">
   <div class= "verticalCadastro"></div> 
    <form class = caixaTextos>
     <label for="nomesobrenome" class="texto">Nome e sobrenome</label><br>

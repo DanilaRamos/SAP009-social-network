@@ -17745,8 +17745,8 @@ function deslogar() {
   const auth2 = getAuth();
   signOut(auth2);
 }
-function converterDataPost() {
-  const dataConvertida = new Date().toLocaleDateString();
+function converterDataPost(data) {
+  const dataConvertida = data.toDate().toLocaleDateString("pt-BR");
   return dataConvertida;
 }
 async function pegarPosts() {
@@ -17755,26 +17755,22 @@ async function pegarPosts() {
   const posts = [];
   querySnapshot.forEach((doc) => {
     const dados = doc.data();
-    dados.data = converterDataPost();
+    dados.data = converterDataPost(dados.data);
     posts.push({ id: doc.id, ...dados });
   });
   return posts;
 }
 async function criandoPost(txt) {
-  try {
-    const postRef = sh(db, "posts");
-    const dataAtual = new Date();
-    const postagem2 = await uf(postRef, {
-      nome: auth.currentUser.displayName,
-      autor: auth.currentUser.uid,
-      texto: txt,
-      data: dataAtual,
-      like: []
-    });
-    console.log("Document written with ID: ", postagem2.id);
-  } catch (e) {
-    alert.error("Error adding document: ", e);
-  }
+  const postRef = sh(db, "posts");
+  const auth2 = getAuth(firebaseApp);
+  const dataAtual = new Date();
+  await uf(postRef, {
+    nome: auth2.currentUser.displayName,
+    autor: auth2.currentUser.uid,
+    texto: txt,
+    data: dataAtual,
+    like: []
+  });
 }
 async function likePost(postId) {
   const auth2 = getAuth(firebaseApp);
@@ -17878,9 +17874,13 @@ const postagem = (posts) => {
         <p id="dataPostado">${post.data}</p>
           <div class="post-action">
           <div class="post-like">
-              ${post.like.includes(auth.currentUser.uid) ? `  <button class="btn-deslike" >
-              <i class="fa-solid fa-heart" data-id="${post.id}" data-like="${post.like}"></i></button>` : ` <button class="btn-like">
-              <i class="fa-regular fa-heart"  data-id="${post.id}" data-like="${post.like}"></i></button>`}
+
+          ${post.like.includes(auth.currentUser.uid) ? `  <button class="btn-deslike" >
+          <i class="fa-solid fa-heart" data-id="${post.id}" data-like="${post.like}"></i>
+      </button>` : `  <button class="btn-like">
+      <i class="fa-regular fa-heart"  data-id="${post.id}" data-like="${post.like}"></i>
+       </button>`}
+          
                   <span class="contar-like">${post.like.length}</span>
 
                       </div>
@@ -17906,7 +17906,7 @@ const postagem = (posts) => {
       likePost(postId).then(() => {
         document.location.reload(true);
       }).catch(() => {
-        console.log("deu ruim");
+        alert("Algo deu errado na sua solicita\xE7\xE3o. Tente novamente em instantes.");
       });
     });
   });
@@ -17916,17 +17916,7 @@ const postagem = (posts) => {
       deslikePost(postId).then(() => {
         document.location.reload(true);
       }).catch(() => {
-        console.log("deu ruim");
-      });
-    });
-  });
-  btnDeslike.forEach((element) => {
-    element.addEventListener("click", (e) => {
-      const postId = e.target.dataset.id;
-      deslikePost(postId).then(() => {
-        document.location.reload(true);
-      }).catch(() => {
-        console.log("deu ruim");
+        alert("Algo deu errado na sua solicita\xE7\xE3o. Tente novamente em instantes.");
       });
     });
   });
@@ -17937,7 +17927,7 @@ const postagem = (posts) => {
       editarPost(postId, textEdit).then(() => {
         document.location.reload(true);
       }).catch(() => {
-        console.log("N\xE3o foi poss\xEDvel editar o seu post, tente novamente.");
+        alert("N\xE3o foi poss\xEDvel editar o seu post, tente novamente.");
       });
     });
   });
@@ -17975,7 +17965,7 @@ const home = () => {
       <img id="logoPgHome" src='${logoHome}'>
       <p id="nomeUsuario">@${displayName}</p>
     
-      <textarea class="feed-text-box" id="areaTexto" placeholder="Escreva aqui um novo post..." name="story" rows="5" cols="33"></textarea>
+      <textarea class="feed-text-box" id="areaTexto" placeholder="Escreva aqui um novo post..." name="story" rows="3" cols="33"></textarea>
       <button id='posts'>Postar</button>
     
       <div id='post-area'></div>
